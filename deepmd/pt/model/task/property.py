@@ -124,7 +124,7 @@ class PropertyFittingNet(InvarFitting):
                     self.var_name,
                     [self.dim_out],
                     reducible=True,
-                    r_differentiable=False,
+                    r_differentiable=True,  # Enable gradient computation w.r.t. coordinates
                     c_differentiable=False,
                     intensive=self.intensive,
                 ),
