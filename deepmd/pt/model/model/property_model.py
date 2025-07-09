@@ -35,11 +35,16 @@ class PropertyModel(DPModelCommon, DPPropertyModel_):
         DPPropertyModel_.__init__(self, *args, **kwargs)
 
     def translated_output_def(self):
+        # is this simply for external schema control?
         out_def_data = self.model_output_def().get_data()
         output_def = {
+            # define ModelOutputDef from FittingOutputDef
             f"atom_{self.get_var_name()}": out_def_data[self.get_var_name()],
             self.get_var_name(): out_def_data[f"{self.get_var_name()}_redu"],
         }
+        if self.do_grad_r(self.get_var_name()):
+            # define the derivative w.r.t. coordinates
+            output_def[f"{self.get_var_name()}_derv_r"] = out_def_data[f"{self.get_var_name()}_derv_r"].squeeze(-2)
         if "mask" in out_def_data:
             output_def["mask"] = out_def_data["mask"]
         return output_def
@@ -53,6 +58,8 @@ class PropertyModel(DPModelCommon, DPPropertyModel_):
         aparam: Optional[torch.Tensor] = None,
         do_atomic_virial: bool = False,
     ) -> dict[str, torch.Tensor]:
+        # (actual coord) forward_common -> forward_common_lower -> 
+        # (extended coord) forward_common_atomic -> forward_atomic
         model_ret = self.forward_common(
             coord,
             atype,
@@ -61,9 +68,16 @@ class PropertyModel(DPModelCommon, DPPropertyModel_):
             aparam=aparam,
             do_atomic_virial=do_atomic_virial,
         )
+        # The actual translation of ModelOutputDef from FittingOutputDef is Here!
         model_predict = {}
+        # Returns atomic values
         model_predict[f"atom_{self.get_var_name()}"] = model_ret[self.get_var_name()]
+        # Returns system values
         model_predict[self.get_var_name()] = model_ret[f"{self.get_var_name()}_redu"]
+        # self.do_grad_r maps to atomic model
+        if self.do_grad_r(self.get_var_name()):
+            # define the derivative w.r.t. coordinates
+            model_predict[f"{self.get_var_name()}_derv_r"] = model_ret[f"{self.get_var_name()}_derv_r"].squeeze(-2)
         if "mask" in model_ret:
             model_predict["mask"] = model_ret["mask"]
         return model_predict
@@ -109,6 +123,8 @@ class PropertyModel(DPModelCommon, DPPropertyModel_):
         model_predict = {}
         model_predict[f"atom_{self.get_var_name()}"] = model_ret[self.get_var_name()]
         model_predict[self.get_var_name()] = model_ret[f"{self.get_var_name()}_redu"]
+        if self.do_grad_r(self.get_var_name()):
+            model_predict[f"{self.get_var_name()}_derv_r"] = model_ret[f"{self.get_var_name()}_derv_r"].squeeze(-2)
         if "mask" in model_ret:
             model_predict["mask"] = model_ret["mask"]
         return model_predict

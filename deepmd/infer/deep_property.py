@@ -59,6 +59,7 @@ class DeepProperty(DeepEval):
                         self.get_var_name(),
                         shape=[self.get_task_dim()],
                         reducible=True,
+                        r_differentiable=True,  # Enable gradient computation w.r.t. coordinates
                         atomic=True,
                         intensive=self.get_intensive(),
                     ),
@@ -71,6 +72,10 @@ class DeepProperty(DeepEval):
         )
         self.deep_eval._OUTDEF_DP2BACKEND[f"{self.get_var_name()}_redu"] = (
             self.get_var_name()
+        )
+        # Add derivative mapping when r_differentiable is True
+        self.deep_eval._OUTDEF_DP2BACKEND[f"{self.get_var_name()}_derv_r"] = (
+            f"{self.get_var_name()}_derv_r"
         )
 
     @property
@@ -142,14 +147,20 @@ class DeepProperty(DeepEval):
         property = results[f"{self.get_var_name()}_redu"].reshape(
             nframes, self.get_task_dim()
         )
+        # add derivative if r_differentiable is True
+        #if f"{self.get_var_name()}_derv_r" in results:
+        property_derv_r = results[f"{self.get_var_name()}_derv_r"].reshape(
+            nframes, natoms, self.get_task_dim(), 3
+            )
+
 
         if atomic:
             return (
-                property,
+                property,property_derv_r,
                 atomic_property,
             )
         else:
-            return (property,)
+            return (property,property_derv_r)
 
     def get_task_dim(self) -> int:
         """Get the output dimension."""
