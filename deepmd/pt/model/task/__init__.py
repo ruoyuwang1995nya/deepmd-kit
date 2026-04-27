@@ -2,6 +2,9 @@
 from .base_fitting import (
     BaseFitting,
 )
+from .custom_ener import (
+    IntensiveEnergyFittingNet,
+)
 from .denoise import (
     DenoiseNet,
 )
@@ -36,6 +39,7 @@ __all__ = [
     "EnergyFittingNet",
     "EnergyFittingNetDirect",
     "Fitting",
+    "IntensiveEnergyFittingNet",
     "PolarFittingNet",
     "PropertyFittingNet",
     "TypePredictNet",

@@ -1836,6 +1836,18 @@ def fitting_ener() -> list[Argument]:
     ]
 
 
+@fitting_args_plugin.register("ener_intensive", doc=doc_only_pt_supported)
+def fitting_ener_intensive() -> list[Argument]:
+    doc_var_name = (
+        "Name of the intensive property. Determines the filenames read from the dataset "
+        "({var_name}.npy for the scalar label and {var_name}_derv_r.npy for the gradient label)."
+    )
+    return [
+        Argument("var_name", str, optional=True, default="energy", doc=doc_var_name),
+        *fitting_ener(),
+    ]
+
+
 @fitting_args_plugin.register("dos", doc=doc_dos)
 def fitting_dos() -> list[Argument]:
     doc_numb_fparam = "The dimension of the frame parameter. If set to >0, file `fparam.npy` should be included to provided the input fparams."
@@ -2717,6 +2729,44 @@ def loss_ener() -> list[Argument]:
             optional=True,
             default=0.01,
             doc=doc_huber_delta,
+        ),
+    ]
+
+
+@loss_args_plugin.register("ener_intensive", doc=doc_only_pt_supported)
+def loss_ener_intensive() -> list[Argument]:
+    doc_start_pref_e = start_pref("intensive energy", abbr="e")
+    doc_limit_pref_e = limit_pref("intensive energy")
+    doc_start_pref_f = start_pref("gradient (force-like)", abbr="f")
+    doc_limit_pref_f = limit_pref("gradient (force-like)")
+    return [
+        Argument(
+            "start_pref_e",
+            [float, int],
+            optional=True,
+            default=0.02,
+            doc=doc_start_pref_e,
+        ),
+        Argument(
+            "limit_pref_e",
+            [float, int],
+            optional=True,
+            default=1.00,
+            doc=doc_limit_pref_e,
+        ),
+        Argument(
+            "start_pref_f",
+            [float, int],
+            optional=True,
+            default=1000,
+            doc=doc_start_pref_f,
+        ),
+        Argument(
+            "limit_pref_f",
+            [float, int],
+            optional=True,
+            default=1.00,
+            doc=doc_limit_pref_f,
         ),
     ]
 

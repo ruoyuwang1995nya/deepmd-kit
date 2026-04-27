@@ -34,6 +34,9 @@ from deepmd.utils.spin import (
     Spin,
 )
 
+from .custom_ener_model import (
+    CustomIntensiveEnergyModel,
+)
 from .dipole_model import (
     DipoleModel,
 )
@@ -267,6 +270,8 @@ def get_standard_model(model_params: dict) -> BaseModel:
         modelcls = DOSModel
     elif fitting_net_type in ["ener", "direct_force_ener"]:
         modelcls = EnergyModel
+    elif fitting_net_type == "ener_intensive":
+        modelcls = CustomIntensiveEnergyModel
     elif fitting_net_type == "property":
         modelcls = PropertyModel
     else:
